@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"os"
+
+	"github.com/CloudyKit/jet"
 )
 
 type application struct {
@@ -11,6 +13,7 @@ type application struct {
 	debug   bool
 	infoLog *log.Logger
 	errLog  *log.Logger
+	view    *jet.Set
 }
 
 type server struct {
