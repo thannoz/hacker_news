@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -17,7 +18,10 @@ func (app *application) routes() http.Handler {
 		mux.Use(middleware.Logger)
 	}
 	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(app.appName))
+		err := app.render(w, r, "index", nil)
+		if err != nil {
+			log.Fatal(err)
+		}
 	})
 
 	return mux

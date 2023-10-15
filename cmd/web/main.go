@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/CloudyKit/jet"
+	"github.com/CloudyKit/jet/v6"
 )
 
 type application struct {
@@ -33,6 +33,13 @@ func main() {
 		debug:   true,
 		infoLog: log.New(os.Stdout, "INFO\t", log.Ltime|log.Ldate|log.Lshortfile),
 		errLog:  log.New(os.Stderr, "ERROR\t", log.Ltime|log.Ldate|log.Llongfile),
+	}
+
+	if app.debug {
+		app.view = jet.NewSet(jet.NewOSFileSystemLoader("./views"), jet.InDevelopmentMode())
+	} else {
+		app.view = jet.NewSet(jet.NewOSFileSystemLoader("./views"))
+
 	}
 
 	if err := app.appServer(); err != nil {
