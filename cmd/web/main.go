@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
@@ -27,6 +28,13 @@ type server struct {
 }
 
 func main() {
+
+	db, err := openDB("")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
 	app := &application{
 		appName: "HackerNews",
 		srv: server{
@@ -66,4 +74,16 @@ func initJet(app *application) {
 		app.view = jet.NewSet(jet.NewOSFileSystemLoader("./views"))
 
 	}
+}
+
+func openDB(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return nil, err
+	}
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
 }
