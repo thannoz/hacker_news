@@ -8,7 +8,10 @@ import (
 	"time"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
+	_ "github.com/lib/pq"
+	"github.com/upper/db/v4/adapter/postgresql"
 )
 
 type application struct {
@@ -35,6 +38,18 @@ func main() {
 	}
 	defer db.Close()
 
+	upper, err := postgresql.New(db)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func(upper) {
+		err := upper.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(upper)
+
 	app := &application{
 		appName: "HackerNews",
 		srv: server{
@@ -51,20 +66,21 @@ func main() {
 	initJet(app)
 
 	// Initialize Session
-	initSession(app)
+	initSession(app, db)
 
 	if err := app.appServer(); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func initSession(app *application) {
+func initSession(app *application, db *sql.DB) {
 	app.session = scs.New()
 	app.session.Lifetime = 24 * time.Hour
 	app.session.Cookie.Persist = true
 	app.session.Cookie.Name = app.appName
 	app.session.Cookie.Domain = app.srv.host
 	app.session.Cookie.SameSite = http.SameSiteStrictMode
+	app.session.Store = postgresstore.New(db)
 }
 
 func initJet(app *application) {

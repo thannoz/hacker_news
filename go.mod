@@ -9,6 +9,7 @@ require (
 
 require (
 	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
+	github.com/alexedwards/scs/postgresstore v0.0.0-20230902070821-95fa2ac9d520 // indirect
 	github.com/alexedwards/scs/v2 v2.5.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.11.0 // indirect
