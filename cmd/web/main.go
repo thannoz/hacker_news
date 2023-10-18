@@ -10,7 +10,9 @@ import (
 	"github.com/CloudyKit/jet/v6"
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/upper/db/v4"
 	"github.com/upper/db/v4/adapter/postgresql"
 )
 
@@ -31,19 +33,23 @@ type server struct {
 }
 
 func main() {
+	envErr := godotenv.Load(".env")
+	if envErr != nil {
+		log.Fatalf("error loading .env file")
+	}
 
-	db, err := openDB("")
+	db2, err := openDB(os.Getenv("DSN_CONN"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer db2.Close()
 
-	upper, err := postgresql.New(db)
+	upper, err := postgresql.New(db2)
 
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func(upper) {
+	defer func(upper db.Session) {
 		err := upper.Close()
 		if err != nil {
 			log.Fatal(err)
@@ -66,7 +72,7 @@ func main() {
 	initJet(app)
 
 	// Initialize Session
-	initSession(app, db)
+	initSession(app, db2)
 
 	if err := app.appServer(); err != nil {
 		log.Fatal(err)
