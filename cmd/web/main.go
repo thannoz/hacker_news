@@ -12,6 +12,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/thannoz/hackernews/models"
 	"github.com/upper/db/v4"
 	"github.com/upper/db/v4/adapter/postgresql"
 )
@@ -24,6 +25,7 @@ type application struct {
 	errLog  *log.Logger
 	view    *jet.Set
 	session *scs.SessionManager
+	Models  models.Models
 }
 
 type server struct {
@@ -66,6 +68,7 @@ func main() {
 		debug:   true,
 		infoLog: log.New(os.Stdout, "INFO\t", log.Ltime|log.Ldate|log.Lshortfile),
 		errLog:  log.New(os.Stderr, "ERROR\t", log.Ltime|log.Ldate|log.Llongfile),
+		Models:  models.NewModel(upper),
 	}
 
 	// Initialize Jet template
