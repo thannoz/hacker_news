@@ -1,6 +1,14 @@
 package models
 
-import "github.com/upper/db/v4"
+import (
+	"errors"
+
+	"github.com/upper/db/v4"
+)
+
+var (
+	ErrNoMoreRows = errors.New("no record found")
+)
 
 type Models struct {
 	Users UsersModel

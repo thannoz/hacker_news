@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -35,6 +37,9 @@ type server struct {
 }
 
 func main() {
+	migrate := flag.Bool("migrate", false, "should migrate - drop all tables")
+	flag.Parse()
+
 	envErr := godotenv.Load(".env")
 	if envErr != nil {
 		log.Fatalf("error loading .env file")
@@ -57,6 +62,15 @@ func main() {
 			log.Fatal(err)
 		}
 	}(upper)
+
+	// run migrations
+	if *migrate {
+		fmt.Println("Running migration")
+		if err := runMigration(upper); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("Done running migration")
+	}
 
 	app := &application{
 		appName: "HackerNews",
@@ -111,4 +125,16 @@ func openDB(dsn string) (*sql.DB, error) {
 		return nil, err
 	}
 	return db, nil
+}
+
+func runMigration(db db.Session) error {
+	file, err := os.ReadFile("./migrations/tables.sql")
+	if err != nil {
+		return err
+	}
+	_, err = db.SQL().Exec(string(file))
+	if err != nil {
+		return err
+	}
+	return nil
 }
