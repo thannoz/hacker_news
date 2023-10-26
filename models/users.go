@@ -5,7 +5,10 @@ import (
 	"time"
 
 	"github.com/upper/db/v4"
+	"golang.org/x/crypto/bcrypt"
 )
+
+const passwordCost = 14
 
 type User struct {
 	ID        uint64    `db:"id,omitempty"`
@@ -33,4 +36,39 @@ func (m *UsersModel) Get(id int) (*User, error) {
 		}
 	}
 	return &user, nil
+}
+
+func (m UsersModel) FindByEmail(email string) (*User, error) {
+
+	var u User
+	err := m.db.Collection(m.Table()).Find(db.Cond{"email": email}).One(&u)
+	if err != nil {
+		if errors.Is(err, db.ErrNoMoreRows) {
+			return nil, ErrNoMoreRows
+		}
+		return nil, err
+	}
+	return &u, nil
+}
+
+func (m UsersModel) InsertUser(u *User) error {
+	newHashPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), passwordCost)
+	if err != nil {
+		return err
+	}
+	u.Password = string(newHashPassword)
+	u.CreatedAt = time.Now()
+	col := m.db.Collection(m.Table())
+	res, err := col.Insert(u)
+	if err != nil {
+		switch {
+		case errHasDuplicate(err, "users_email_key"):
+			return ErrEmailDuplicate
+		default:
+			return err
+		}
+	}
+	u.ID = convertUpperIDToInt(res.ID)
+
+	return nil
 }
