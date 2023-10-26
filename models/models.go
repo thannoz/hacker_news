@@ -26,7 +26,7 @@ func NewModel(db db.Session) Models {
 func convertUpperIDToInt(id db.ID) int {
 	idType := fmt.Sprintf("%T", id)
 	if idType == "int64" {
-		return int(id.(int64))
+		return int(id.(uint64))
 	}
 	return id.(int)
 }

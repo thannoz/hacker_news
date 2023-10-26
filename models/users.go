@@ -11,7 +11,7 @@ import (
 const passwordCost = 14
 
 type User struct {
-	ID        uint64    `db:"id,omitempty"`
+	ID        int       `db:"id,omitempty"`
 	Name      string    `db:"name"`
 	Email     string    `db:"email"`
 	Password  string    `db:"password_hash"`
@@ -68,7 +68,8 @@ func (m UsersModel) InsertUser(u *User) error {
 			return err
 		}
 	}
-	u.ID = convertUpperIDToInt(res.ID)
+
+	u.ID = convertUpperIDToInt(res.ID())
 
 	return nil
 }
