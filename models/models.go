@@ -17,11 +17,13 @@ var (
 
 type Models struct {
 	Users UsersModel
+	Posts PostModel
 }
 
 func NewModel(db db.Session) Models {
 	return Models{
 		Users: UsersModel{db: db},
+		Posts: PostModel{db: db},
 	}
 }
 
