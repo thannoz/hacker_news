@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"math"
 	"strings"
 )
 
@@ -61,4 +62,35 @@ func (f *Filter) addLimitOffset(q string) string {
 // applyTemplate constructs the queries writen above
 func (f *Filter) applyTemplate(q string) string {
 	return f.addLimitOffset(f.addWhere(f.addOrdering(q)))
+}
+
+func (f *Filter) limit() int {
+	return f.PageSize
+}
+
+func (f *Filter) offset() int {
+	return (f.Page - 1) * f.PageSize
+}
+
+func calculateMetaData(totalRecords, page, pageSize int) MetaData {
+	if totalRecords == 0 {
+		return MetaData{}
+	}
+
+	meta := MetaData{
+		CurrentPage:  page,
+		PageSize:     pageSize,
+		FirstPage:    1,
+		LastPage:     int(math.Ceil(float64(totalRecords) / float64(pageSize))),
+		TotalRecords: totalRecords,
+	}
+
+	meta.NextPage = meta.CurrentPage + 1
+	meta.PrevPage = meta.CurrentPage - 1
+
+	if meta.CurrentPage <= meta.FirstPage {
+		meta.PrevPage = 0
+	}
+
+	return meta
 }
