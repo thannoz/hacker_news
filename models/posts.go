@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"errors"
 	"strings"
 	"time"
@@ -49,7 +50,7 @@ func (m PostsModel) Table() string {
 }
 
 // Get gets a post by id from the database
-func (pm PostsModel) Get(id int) (*Post, error) {
+func (pm PostsModel) GetPost(id int) (*Post, error) {
 	var post Post
 	query := strings.Replace(queryTemplate, "#where#", "WHERE p.id = $1", 1)
 	query = strings.Replace(query, "#orderby#", "", 1)
@@ -58,6 +59,26 @@ func (pm PostsModel) Get(id int) (*Post, error) {
 	rows, err := pm.db.SQL().Query(query, id)
 	if err != nil {
 		return nil, err
+	}
+
+	iter := pm.db.SQL().NewIterator(rows)
+	err = iter.One(&post)
+	if err != nil {
+		return nil, err
+	}
+
+	return &post, nil
+}
+
+// Get gets a post by id from the database
+func (pm PostsModel) GetPosts(f Filter) ([]Post, MetaData, error) {
+	var post []Post
+	var rows *sql.Rows
+	var err error
+
+	query := f.applyTemplate(queryTemplate)
+	if len(f.Query) > 0 {
+		rows, err = pm.db.SQL().Query(query, "%s"+strings.ToLower(f.Query)+"%", f.limit(), f.offset())
 	}
 
 	iter := pm.db.SQL().NewIterator(rows)
