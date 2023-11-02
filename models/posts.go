@@ -72,20 +72,50 @@ func (pm PostsModel) GetPost(id int) (*Post, error) {
 
 // Get gets a post by id from the database
 func (pm PostsModel) GetPosts(f Filter) ([]Post, MetaData, error) {
-	var post []Post
+	var posts []Post
 	var rows *sql.Rows
 	var err error
+
+	meta := MetaData{}
 
 	query := f.applyTemplate(queryTemplate)
 	if len(f.Query) > 0 {
 		rows, err = pm.db.SQL().Query(query, "%s"+strings.ToLower(f.Query)+"%", f.limit(), f.offset())
+
+	} else {
+		rows, err = pm.db.SQL().Query(query, f.limit(), f.offset())
+	}
+	if err != nil {
+		return nil, meta, err
 	}
 
 	iter := pm.db.SQL().NewIterator(rows)
-	err = iter.One(&post)
+	err = iter.All(&posts)
+
 	if err != nil {
-		return nil, err
+		return nil, meta, nil
 	}
 
-	return &post, nil
+	if len(posts) == 0 {
+		return nil, meta, errors.New("no records")
+	}
+
+	first := posts[0]
+	return posts, calculateMetaData(first.TotalRecords, f.Page, f.PageSize), nil
+}
+
+// Vote enables a user to vote
+func (pm PostsModel) Vote(postID int, userID int) error {
+
+	vote := pm.db.Collection("votes")
+	_, err := vote.Insert(map[string]int{
+		"post_id": postID,
+		"user_id": userID,
+	})
+	if err != nil {
+		if errHasDuplicate(err, "votes_pkey") {
+			return errDuplicateVotes
+		}
+	}
+	return nil
 }

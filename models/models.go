@@ -13,6 +13,7 @@ var (
 	ErrEmailDuplicate = errors.New("email already exists")
 	ErrUserNotActive  = errors.New("you account is not active")
 	ErrInvalidLogin   = errors.New("invalid login")
+	errDuplicateVotes = errors.New("you have already voted")
 )
 
 type Models struct {
