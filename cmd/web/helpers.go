@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"runtime/debug"
 	"strconv"
 )
 
@@ -11,4 +13,11 @@ func (a *application) readInt(r *http.Request, key string) int {
 		return 0
 	}
 	return v
+}
+
+func (a *application) serverError(w http.ResponseWriter, err error) {
+	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
+	a.errLog.Output(2, trace)
+
+	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
