@@ -1,6 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/justinas/nosurf"
+)
 
 func (app *application) LoadSession(next http.Handler) http.Handler {
 	return app.session.LoadAndSave(next)
@@ -17,4 +21,10 @@ func (a *application) authRequired(next http.HandlerFunc) http.HandlerFunc {
 		w.Header().Add("Cache-Control", "no-store")
 		next.ServeHTTP(w, r)
 	}
+}
+
+func (a *application) CSRFTokenRequired(next http.Handler) http.Handler {
+	handler := nosurf.New(next)
+
+	return handler
 }
